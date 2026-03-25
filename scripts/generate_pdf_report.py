@@ -7,21 +7,19 @@ score visualizations, and prioritized action plans.
 Requires: reportlab (pip install reportlab)
 """
 
-import sys
 import json
-import os
+import sys
 from datetime import datetime
 
 try:
-    from reportlab.lib.pagesizes import letter
-    from reportlab.lib.units import inch
-    from reportlab.lib.colors import HexColor, white, black
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, Table,
-                                     TableStyle, PageBreak, Image)
-    from reportlab.graphics.shapes import Drawing, Rect, Circle, String, Line, Wedge
-    from reportlab.graphics.charts.barcharts import VerticalBarChart
     from reportlab.graphics import renderPDF
+    from reportlab.graphics.charts.barcharts import VerticalBarChart
+    from reportlab.graphics.shapes import Circle, Drawing, Line, Rect, String, Wedge
+    from reportlab.lib.colors import HexColor, black, white
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.units import inch
+    from reportlab.platypus import Image, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 except ImportError:
     print("Error: reportlab is required. Install with: pip install reportlab")
     sys.exit(1)
@@ -475,7 +473,7 @@ def main():
     input_file = sys.argv[1]
     output_file = sys.argv[2] if len(sys.argv) > 2 else "MARKETING-REPORT.pdf"
 
-    with open(input_file, "r") as f:
+    with open(input_file) as f:
         data = json.load(f)
 
     generate_report(data, output_file)

@@ -4,10 +4,9 @@ Social Media Calendar Generator — Utility script for AI Marketing Claude Code 
 Generates a structured 30-day social media content calendar with platform-specific posts.
 """
 
-import sys
 import json
+import sys
 from datetime import datetime, timedelta
-
 
 # Content pillar templates
 CONTENT_PILLARS = {

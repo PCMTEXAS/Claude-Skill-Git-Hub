@@ -5,12 +5,13 @@ Scans competitor websites to extract positioning, pricing, features, and trust s
 for competitive analysis.
 """
 
-import sys
 import json
+import os
 import re
-import urllib.request
-import urllib.error
 import ssl
+import sys
+import urllib.error
+import urllib.request
 from html.parser import HTMLParser
 from urllib.parse import urlparse
 
@@ -141,11 +142,6 @@ class CompetitorPageParser(HTMLParser):
         full_text = " ".join(self._all_text)
         word_count = len(full_text.split())
 
-        # Extract positioning
-        positioning = self.og_description or self.meta_description or ""
-        if self.h1_tags:
-            positioning = self.h1_tags[0]
-
         return {
             "positioning": {
                 "headline": self.h1_tags[0] if self.h1_tags else self.title,
@@ -174,9 +170,14 @@ class CompetitorPageParser(HTMLParser):
 
 def fetch_page(url):
     """Fetch a webpage."""
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
+    # Use default SSL context with certificate verification enabled.
+    # Set MARKETING_SKIP_SSL_VERIFY=1 to disable verification (not recommended).
+    if os.environ.get("MARKETING_SKIP_SSL_VERIFY") == "1":
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+    else:
+        ctx = ssl.create_default_context()
 
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
@@ -187,7 +188,7 @@ def fetch_page(url):
     try:
         response = urllib.request.urlopen(req, timeout=15, context=ctx)
         return response.read().decode("utf-8", errors="replace")
-    except:
+    except Exception:
         return None
 
 
@@ -214,7 +215,7 @@ def scan_competitor(url):
     parser = CompetitorPageParser()
     try:
         parser.feed(html)
-    except:
+    except Exception:
         result["status"] = "error"
         result["message"] = "Could not parse page"
         return result
@@ -241,7 +242,7 @@ def scan_competitor(url):
                     "pricing_mentions": pricing_data["pricing"]["pricing_mentions"],
                     "sections": pricing_data["positioning"]["key_sections"]
                 }
-            except:
+            except Exception:  # noqa: S110 — non-critical; pricing page parsing failure is expected
                 pass
             break
     else:

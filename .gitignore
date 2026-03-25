@@ -15,6 +15,20 @@
 /SEO-AUDIT.md
 /BRAND-VOICE.md
 
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.secrets
+*.credentials
+
 # Python
 __pycache__/
 *.pyc
@@ -39,3 +53,8 @@ node_modules/
 # Temp
 *.tmp
 *.bak
+
+# Logs
+*.log
+npm-debug.log*
+pip-log.txt

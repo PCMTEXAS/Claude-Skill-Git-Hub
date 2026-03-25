@@ -5,14 +5,14 @@ Analyzes a webpage for marketing effectiveness: SEO elements, content structure,
 trust signals, CTAs, social proof, and conversion optimization indicators.
 """
 
-import sys
 import json
-import re
-import urllib.request
-import urllib.error
+import os
 import ssl
+import sys
+import urllib.error
+import urllib.request
 from html.parser import HTMLParser
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse
 
 
 class MarketingPageParser(HTMLParser):
@@ -303,9 +303,14 @@ class MarketingPageParser(HTMLParser):
 
 def fetch_page(url):
     """Fetch a webpage and return its HTML content."""
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
+    # Use default SSL context with certificate verification enabled.
+    # Set MARKETING_SKIP_SSL_VERIFY=1 to disable verification (not recommended).
+    if os.environ.get("MARKETING_SKIP_SSL_VERIFY") == "1":
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+    else:
+        ctx = ssl.create_default_context()
 
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -317,9 +322,9 @@ def fetch_page(url):
     try:
         response = urllib.request.urlopen(req, timeout=15, context=ctx)
         return response.read().decode("utf-8", errors="replace")
-    except urllib.error.HTTPError as e:
+    except urllib.error.HTTPError:
         return None
-    except Exception as e:
+    except Exception:
         return None
 
 
@@ -339,16 +344,20 @@ def fetch_sitemap(url):
     parsed = urlparse(url)
     sitemap_url = f"{parsed.scheme}://{parsed.netloc}/sitemap.xml"
     try:
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
+        # Use default SSL context with certificate verification enabled.
+        if os.environ.get("MARKETING_SKIP_SSL_VERIFY") == "1":
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+        else:
+            ctx = ssl.create_default_context()
         req = urllib.request.Request(sitemap_url, headers={"User-Agent": "MarketingBot/1.0"})
         response = urllib.request.urlopen(req, timeout=10, context=ctx)
         content = response.read().decode("utf-8", errors="replace")
         # Count URLs in sitemap
         url_count = content.lower().count("<url>") or content.lower().count("<loc>")
         return {"exists": True, "url_count": url_count}
-    except:
+    except Exception:
         return {"exists": False, "url_count": 0}
 
 
